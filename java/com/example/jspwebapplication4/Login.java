@@ -10,7 +10,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import org.mindrot.jbcrypt.BCrypt;
 
-@WebServlet(name = "helloServlet", value = "/login")
+@WebServlet(name = "login", value = "/login")
 public class Login extends HttpServlet {
 
     @Override
@@ -29,25 +29,43 @@ public class Login extends HttpServlet {
 
             String sql = "select * from jdbcdb.user where username=?";
             ps = c.prepareStatement(sql);
-            ps.setString(1,username);
+            ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
 
 
+            if (rs.next()) {
 
-if(rs.next()) {
-
-    String usernameDb = rs.getString("username");
-    String passwordDb = rs.getString("password");
-
-
-    if (verifyPassword(password, passwordDb)) {
-
-        out.println("<h1>" + "Successfull Login " + "</h1>");
-         response.sendRedirect("home.jsp");
+                String usernameDb = rs.getString("username");
+                String passwordDb = rs.getString("password");
+                String emailDb = rs.getString("email");
+                int ageDb = rs.getInt("age");
 
 
-    }
-}
+
+                if (verifyPassword(password, passwordDb)) {
+                    HttpSession httpSession = request.getSession();
+                    httpSession.setAttribute("login", true);
+
+                    Cookie usernameCookie = new Cookie("username", username);
+                    Cookie emailCookie = new Cookie("email", emailDb);
+                    Cookie ageCookie = new Cookie("age", Integer.toString(ageDb));
+
+                    response.addCookie(usernameCookie);
+                    response.addCookie(emailCookie);
+                    response.addCookie(ageCookie);
+
+
+                    boolean login = (boolean) request.getSession().getAttribute("login");
+                    if (login) {
+                        out.println("Succesfull Login");
+                        response.sendRedirect("list.jsp");
+                    } else {
+                        response.sendRedirect("index.jsp");
+
+                    }
+
+                }
+            }
 
 
         } catch (Exception e) {
@@ -79,7 +97,7 @@ if(rs.next()) {
     }
 
     public static boolean verifyPassword(String pasword, String dbPassword) {
-        return BCrypt.checkpw(pasword,dbPassword);
+        return BCrypt.checkpw(pasword, dbPassword);
     }
 
 

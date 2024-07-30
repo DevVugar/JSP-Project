@@ -26,13 +26,18 @@ public class Register extends HttpServlet {
             c =connector.connect() ;
             String username = request.getParameter("username");
             String plainPassword = request.getParameter("password");
+            String email = request.getParameter("email");
+            int age = Integer.parseInt(request.getParameter("age"));
+
             String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
 
 
-            String sql = "INSERT INTO user(username, password) VALUES (?, ?)";
+            String sql = "INSERT INTO user(username, password,email,age) VALUES (?, ?, ?, ?)";
             ps = c.prepareStatement(sql);
             ps.setString(1, username);
             ps.setString(2, hashedPassword);
+            ps.setString(3,email);
+            ps.setInt(4,age);
 
 
             int rowsInserted = ps.executeUpdate();
